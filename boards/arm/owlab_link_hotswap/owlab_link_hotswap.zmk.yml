@@ -1,0 +1,10 @@
+file_format: "1"
+id: owlab_link_hotswap
+name: Owlab Link
+type: board
+arch: arm
+features:
+  - keys
+outputs:
+  - usb
+url: https://github.com/thsrhwk01/zmk-config_LINK65

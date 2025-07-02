@@ -19,4 +19,4 @@
 #
 ---
 include:
-  - board: kbdfans_tofu65_v2
+  - board: owlab_link_hotswap

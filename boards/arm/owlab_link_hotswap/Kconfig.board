@@ -1,0 +1,3 @@
+config BOARD_OWLAB_LINK_HOTSWAP
+    bool "Owlab Link"
+    depends on SOC_STM32F103X8
