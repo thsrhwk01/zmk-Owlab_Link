@@ -95,7 +95,7 @@
 
 
 &pll {
-    mul = <6>;
+    mul = <9>;
     clocks = <&clk_hse>;
 
     status = "okay";
@@ -105,7 +105,7 @@
 &rcc {
     clocks = <&pll>;
     ahb-prescaler = <1>;
-    clock-frequency = <DT_FREQ_M(48)>;
+    clock-frequency = <DT_FREQ_M(72)>;
     apb1-prescaler = <2>;
     apb2-prescaler = <1>;
 
