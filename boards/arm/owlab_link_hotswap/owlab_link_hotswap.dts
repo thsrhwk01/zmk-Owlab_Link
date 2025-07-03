@@ -96,8 +96,8 @@
 
 &pll {
     mul = <9>;
-    xtpre = <false>;
-    usbpre = <false>;
+    xtpre = <0>;
+    usbpre = <0>;
     clocks = <&clk_hse>;
 
     status = "okay";
