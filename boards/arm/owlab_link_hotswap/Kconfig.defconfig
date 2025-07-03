@@ -3,13 +3,13 @@ if BOARD_OWLAB_LINK_HOTSWAP
 config BOARD
     default "owlab_link_hotswap"
 
+config ZMK_KEYBOARD_NAME
+    default "Owlab Link"
+
 config ZMK_USB
     default y
 
 config ZMK_KSCAN_MATRIX_POLLING
     default y
-
-config CONFIG_USB_DEVICE_MANUFACTURER
-    default "Owlab"
 
 endif # BOARD_OWLAB_LINK_HOTSWAP

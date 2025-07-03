@@ -5,7 +5,7 @@
 
 /dts-v1/;
 
-#include "stm32f103x8.dtsi"
+#include <st/f1/stm32f103X8.dtsi>
 #include <st/f1/stm32f103r(8-b)tx-pinctrl.dtsi>
 
 #include <dt-bindings/zmk/matrix_transform.h>
@@ -18,11 +18,10 @@
         zephyr,sram = &sram0;
         zephyr,flash = &flash0;
         zmk,kscan = &kscan;
-        zmk,matrix_transform = &transform;
         zmk,physical-layout = &layout_65_ansi;
     };
 
-    transform: transform {
+        default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <15>;
         rows = <5>;
@@ -96,8 +95,19 @@
 
 
 &pll {
-    mul = 6;
+    mul = <6>;
     clocks = <&clk_hse>;
+
+    status = "okay";
+};
+
+
+&rcc {
+    clocks = <&pll>;
+    ahb-prescaler = <1>
+    clock-frequency = <DT_FREQ_M(48)>;
+    apb1-prescaler = <2>;
+    apb2-prescaler = <1>;
 
     status = "okay";
 };
@@ -127,11 +137,6 @@ zephyr_udc0: &usb {
             reg = <0x00018000 0x00008000>;
         };
     };
-};
-
-
-zephyr_udc0: &usbd {
-  status = "okay";
 };
 
 &layout_65_ansi {
