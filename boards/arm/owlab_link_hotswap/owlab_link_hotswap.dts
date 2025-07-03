@@ -104,7 +104,7 @@
 
 &rcc {
     clocks = <&pll>;
-    ahb-prescaler = <1>
+    ahb-prescaler = <1>;
     clock-frequency = <DT_FREQ_M(48)>;
     apb1-prescaler = <2>;
     apb2-prescaler = <1>;
