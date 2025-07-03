@@ -2,14 +2,10 @@
  * Copyright (c) 2023 The ZMK Contributors
  * SPDX-License-Identifier: MIT
  */
-/*
- * Copyright (c) 2023 The ZMK Contributors
- * SPDX-License-Identifier: MIT
- */
 
 /dts-v1/;
 
-#include <st/f1/stm32f103x8.dtsi>
+#include <stm32f103x8.dtsi>
 #include <st/f1/stm32f103r(8-b)tx-pinctrl.dtsi>
 
 #include <dt-bindings/zmk/matrix_transform.h>
