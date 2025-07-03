@@ -6,7 +6,7 @@
 /dts-v1/;
 
 #include <st/f1/stm32f103X8.dtsi>
-#include <st/f1/stm32f103r(8-b)tx-pinctrl.dtsi>
+#include <st/f1/stm32f103c(8-b)tx-pinctrl.dtsi>
 
 #include <dt-bindings/zmk/matrix_transform.h>
 
@@ -111,15 +111,6 @@
 
     status = "okay";
 };
-
-
-zephyr_udc0: &usb {
-    status = "okay";
-    
-    pinctrl-0 = <&usb_dm_pa11 &usb_dp_pa12>;
-    pinctrl-names = "default";
-};
-
 
 &flash0 {
     /*
