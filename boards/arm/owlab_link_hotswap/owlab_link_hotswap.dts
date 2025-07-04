@@ -115,19 +115,24 @@
 };
 
 &flash0 {
-    /*
-     * For more information, see:
-     * http://docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
-     */
     partitions {
         compatible = "fixed-partitions";
         #address-cells = <1>;
-        #size-cells = <1>;
+        #size-cells    = <1>;
 
-        /* Set 6Kb of storage at the end of the 128Kb of flash */
-        storage_partition: partition@1e800 {
-            label = "storage";
-            reg = <0x0001e800 0x00001800>;
+        /* 24 KiB resident DFU boot-loader */
+        bootloader: partition@0 {
+            label = "boot";
+            reg   = <0x00000000 0x00006000>;
+        };
+
+        /* Application code */
+        app: partition@6000 {
+            label = "app";
+            /* Size-out depends on the real device:      */
+            /*   0xA000 for genuine 64 KiB F103C8/C6     */
+            /*   0x1A000 for 128 KiB “Blue-pill” clones  */
+            reg   = <0x00006000 0x0000A000>;
         };
     };
 };
