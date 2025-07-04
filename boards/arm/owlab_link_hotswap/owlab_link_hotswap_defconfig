@@ -20,3 +20,10 @@ CONFIG_USB_SELF_POWERED=n
 
 # clock configuration
 CONFIG_CLOCK_CONTROL=y
+      
+# The physical start address of the flash controller
+CONFIG_FLASH_BASE_ADDRESS=0x08000000
+
+# The offset from the base address where the application will be loaded.
+# This space is reserved for the bootloader.
+CONFIG_FLASH_LOAD_OFFSET=0x6000
