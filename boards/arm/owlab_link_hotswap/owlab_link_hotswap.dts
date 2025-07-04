@@ -123,7 +123,7 @@
         #address-cells = <1>;
         #size-cells = <1>;
 
-        reg = <0x08005800 DT_SIZE_K(106)>
+        reg = <0x08005800 DT_SIZE_K(106)>;
 
         /* Define the storage partition at the end of the 128KB flash */
         storage_partition: partition@1C000 {
