@@ -118,11 +118,6 @@
         #address-cells = <1>;
         #size-cells    = <1>;
 
-        /* 24 KiB resident DFU boot-loader */
-        boot_partition: partition@0 {
-            reg   = <0x00000000 0x00006000>;
-        };
-
         /* Application code */
         app: partition@6000 {
             /* Size-out depends on the real device:      */
