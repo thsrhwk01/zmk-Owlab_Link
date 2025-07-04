@@ -121,7 +121,7 @@
         #size-cells    = <1>;
 
         /* 24 KiB resident DFU boot-loader */
-        bootloader: partition@0 {
+        boot_partition: partition@0 {
             reg   = <0x00000000 0x00006000>;
         };
 
