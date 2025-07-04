@@ -123,13 +123,21 @@
         #address-cells = <1>;
         #size-cells = <1>;
 
+        /* Bootloader slot: 22KB */
+        boot_partition: partition@0 {
+            label = "mcuboot";
+
+            reg = <0x00000000 DT_SIZE_K(22)>;
+            read-only;
+        };
+
         /* Define the storage partition at the end of the 128KB flash */
         storage_partition: partition@1C000 {
             label = "storage";
             
             /* 128KB total flash - 16KB storage = 112KB offset = 0x1C000 */
             /* Size of storage is 16KB = 0x4000 */
-            reg = <0x0001C000 0x00004000>; 
+            reg = <0 0x0001C000 0x00004000>; 
         };
     };
 };
