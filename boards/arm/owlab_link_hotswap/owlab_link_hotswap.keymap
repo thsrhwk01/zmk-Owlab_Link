@@ -27,18 +27,11 @@
     combos {
         compatible = "zmk,combos";
 
-        // BACKSPACE + LCTRL + LALT = &sys_reset
-        combo_bootloader {
+        // BACKSPACE + LCTRL + LALT = soft reset
+        combo_sys_reset {
             timeout-ms = <100>;
             key-positions = <13 58 60>;
             bindings = <&sys_reset>;
-        };
-
-        // RETURN + LCTRL + LALT = &bootloader
-        combo_sys_reset {
-            timeout-ms = <100>;
-            key-positions = <42 58 60>;
-            bindings = <&bootloader>;
         };
     };
 

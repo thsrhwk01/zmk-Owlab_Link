@@ -1,3 +1,4 @@
+name: zmk-keyboard-owlab-link
 build:
   settings:
     board_root: .

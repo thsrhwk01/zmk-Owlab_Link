@@ -2,7 +2,7 @@
 
 CONFIG_BOARD_OWLAB_LINK_HOTSWAP=y
 CONFIG_SOC_SERIES_STM32F1X=y
-CONFIG_SOC_STM32F103X8=y
+CONFIG_SOC_STM32F103XB=y
 
 # 72MHz system clock
 CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC=72000000
@@ -20,10 +20,6 @@ CONFIG_USB_SELF_POWERED=n
 
 # clock configuration
 CONFIG_CLOCK_CONTROL=y
-      
-# The physical start address of the flash controller
-CONFIG_FLASH_BASE_ADDRESS=0x08000000
 
-# The offset from the base address where the application will be loaded.
-# This space is reserved for the bootloader.
-CONFIG_FLASH_LOAD_OFFSET=0x5800
+# Link the application into the code partition declared in devicetree.
+CONFIG_USE_DT_CODE_PARTITION=y

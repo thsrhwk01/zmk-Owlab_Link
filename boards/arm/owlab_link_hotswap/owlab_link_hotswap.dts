@@ -5,7 +5,7 @@
 
 /dts-v1/;
 
-#include <st/f1/stm32f103X8.dtsi>
+#include <st/f1/stm32f103Xb.dtsi>
 #include <st/f1/stm32f103c(8-b)tx-pinctrl.dtsi>
 
 #include <dt-bindings/zmk/matrix_transform.h>
@@ -13,10 +13,13 @@
 #include <layouts/common/65percent/ansi.dtsi>
 
 / {
+    model = "Owlab LINK65 Hotswap";
+    compatible = "owlab,link65-hotswap", "st,stm32f103";
 
     chosen {
         zephyr,sram = &sram0;
         zephyr,flash = &flash0;
+        zephyr,code-partition = &code_partition;
         zmk,kscan = &kscan;
         zmk,physical-layout = &layout_65_ansi;
     };
@@ -49,8 +52,7 @@
     kscan: kscan {
         compatible = "zmk,kscan-gpio-matrix";
 
-        // Check here
-        diode-direction = "row2col";
+        diode-direction = "col2row";
 
 /*
  * "matrix_pins": {
@@ -60,21 +62,21 @@
  */
 
         col-gpios
-            = <&gpioa 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 0  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 1  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 2  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpiob 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpioa 8  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpioa 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpioa 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpioa 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpioa 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            = <&gpioa 7  GPIO_ACTIVE_HIGH>
+            , <&gpiob 0  GPIO_ACTIVE_HIGH>
+            , <&gpiob 1  GPIO_ACTIVE_HIGH>
+            , <&gpiob 2  GPIO_ACTIVE_HIGH>
+            , <&gpiob 10 GPIO_ACTIVE_HIGH>
+            , <&gpiob 11 GPIO_ACTIVE_HIGH>
+            , <&gpiob 12 GPIO_ACTIVE_HIGH>
+            , <&gpiob 13 GPIO_ACTIVE_HIGH>
+            , <&gpiob 14 GPIO_ACTIVE_HIGH>
+            , <&gpiob 15 GPIO_ACTIVE_HIGH>
+            , <&gpioa 8  GPIO_ACTIVE_HIGH>
+            , <&gpioa 9  GPIO_ACTIVE_HIGH>
+            , <&gpioa 10 GPIO_ACTIVE_HIGH>
+            , <&gpioa 6  GPIO_ACTIVE_HIGH>
+            , <&gpioa 15 GPIO_ACTIVE_HIGH>
             ;
         row-gpios
             = <&gpioa 1  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
@@ -84,6 +86,11 @@
             , <&gpioa 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             ;
     };
+};
+
+&pinctrl {
+    /* Release PA15/PB3/PB4 from JTAG while retaining SWD on PA13/PA14. */
+    swj-cfg = "jtag-disable";
 };
 
 
@@ -114,24 +121,20 @@
 };
 
 &flash0 {
-    /*
-     * For more information, see:
-     * http://docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
-     */
     partitions {
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
 
-        reg = <0x08006000 DT_SIZE_K(104)>;
+        link_bootloader_partition: partition@0 {
+            label = "link65_bootloader";
+            reg = <0x00000000 0x00006000>;
+            read-only;
+        };
 
-        /* Define the storage partition at the end of the 128KB flash */
-        storage_partition: partition@1C000 {
-            label = "storage";
-            
-            /* 128KB total flash - 16KB storage = 112KB offset = 0x1C000 */
-            /* Size of storage is 16KB = 0x4000 */
-            reg = <0x0001C000 0x00004000>; 
+        code_partition: partition@6000 {
+            label = "code";
+            reg = <0x00006000 0x0001A000>;
         };
     };
 };
