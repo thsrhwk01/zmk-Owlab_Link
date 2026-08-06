@@ -1,104 +1,149 @@
-# ZMK for Owlab LINK65
+# Owlab LINK65 ZMK Firmware
 
-Experimental wired ZMK support for the Owlab LINK65 hotswap PCB.
+[한국어](README_ko.md)
 
-## Hardware target
+Wired ZMK firmware for the Owlab LINK65 hotswap PCB. It runs ZMK from
+`0x08006000` while preserving the factory DFU bootloader.
 
-- Expected MCU: Geehy APM32F103CBT6, used through Zephyr's STM32F103xB support
-- CPU: Arm Cortex-M3 at 72 MHz from an 8 MHz HSE
-- Memory: 128 KiB flash and 20 KiB SRAM
-- USB: full-speed device on PA11/PA12
-- Matrix: 5 rows by 15 columns, 67 populated positions, COL2ROW
-- Wireless: not supported by the stock PCB
+**This firmware has only been tested on a LINK65 hotswap PCB with an
+`APM32F103CBT6` at U3. Do not flash it onto a solder PCB, a different revision,
+or a board with a different MCU.**
 
-Check the marking on U3 before flashing. Stop if the installed MCU is not an
-APM32F103CBT6 or another verified 128 KiB STM32F103xB-compatible part.
+## Features
 
-## Flash layout
+- Wired USB keyboard support with a 67-key ANSI 65% layout
+- Preserves the factory DFU bootloader and physical **B** button
+- Uses the same active-low row drive and column input scheme as the factory firmware
+- Applies the 30 us matrix settling time measured on the LINK65
+- Releases PA15 for key input by disabling JTAG while retaining the SWD pins
+- Reproducible ZMK firmware builds through GitHub Actions
 
-| Region | Address range | Size |
-| --- | --- | ---: |
-| Factory bootloader | `0x08000000`-`0x080057FF` | 22 KiB |
-| Vendor handoff data | `0x08005800`-`0x08005FFF` | 2 KiB |
-| ZMK application | `0x08006000`-`0x0801FFFF` | 104 KiB |
+The stock PCB has no wireless hardware, so Bluetooth is not supported. The
+current firmware also does not include ZMK Studio, persistent settings storage,
+or RGB/lighting control.
 
-The first bring-up firmware intentionally has no settings/storage partition and
-does not enable ZMK Studio. Never mass-erase the controller and never flash an
-application at `0x08000000`.
+## Supported Hardware
 
-The factory DFU descriptor reports the internal flash as
-`22*001Ka,106*001Kg`: 22 read-only 1 KiB pages followed by 106 readable,
-erasable, and writable 1 KiB pages. This describes access permissions, not the
-application entry point. A readback of the protected bootloader contains two
-literal references to `0x08006000` and none to `0x08005800`; a known-good image
-also contains a vector table at `0x08006000`. Preserve the writable 2 KiB
-handoff region before the ZMK application.
+| Item | Verified configuration |
+| --- | --- |
+| Keyboard | Owlab LINK65 hotswap PCB |
+| MCU | Geehy `APM32F103CBT6` |
+| Compatible SoC configuration | Zephyr `STM32F103xB` |
+| Flash / SRAM | 128 KiB / 20 KiB |
+| System clocks | 8 MHz HSE, 72 MHz CPU, 48 MHz USB |
+| Key matrix | 5 rows × 15 columns, 67 switches |
+| Connection | USB Full-Speed |
+| DFU device | `1688:2220`, alternate setting 0 |
 
-The bootloader also masks the application's initial main stack pointer with
-`0x2FFFB000` and only jumps when the result is `0x20000000`. The board linker
-snippet places Zephyr's early kernel stacks at the beginning of SRAM so the
-first vector passes that check without substituting a fake stack pointer.
-`CONFIG_INIT_ARCH_HW_AT_BOOT` is enabled because the factory DFU chain-loads
-the application without a Cortex-M system reset; Zephyr must clear inherited
-SysTick and NVIC state before enabling its own interrupts.
+Stop if the marking on U3 differs from the one above. A board carrying the same
+LINK65 name does not necessarily use the same PCB or flash layout.
 
-On STM32F103, the RCC `USBPRE` bit has inverted-looking semantics: when clear,
-the 72 MHz PLL is divided by 1.5 to produce the required 48 MHz USB clock. The
-devicetree therefore intentionally omits the PLL node's `usbpre` property.
+## Quick Install
 
-The matrix configuration matches the factory Vial scanner: it drives each of
-the five rows active-low and reads the 15 columns as pulled-up active-low
-inputs. The factory binary waits 2,160 CPU cycles after releasing a row, which
-is 30 microseconds at 72 MHz. ZMK uses the same settling delay plus a 1
-microsecond propagation delay before reading inputs. Scanning in the opposite
-direction with ZMK's zero-delay default can retain the previous input level and
-report the key in the next column as well.
+### 1. Download the firmware
 
-## Build
+1. Open a recent successful run of
+   [Build ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml).
+2. Download the `firmware` artifact at the bottom of the run page and extract it.
+3. Locate `owlab_link_hotswap-zmk.bin`.
 
-The repository is pinned to ZMK v0.3.0. Push the branch or manually dispatch the
-GitHub Actions workflow; the expected artifact is
-`owlab_link_hotswap-zmk.bin`.
+The current hardware-validated baseline is
+[commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
+built by [Actions run `31102550907`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/runs/31102550907).
 
-Before flashing, inspect the build output and confirm all of the following:
+### 2. Prepare
 
-- `CONFIG_FLASH_SIZE=128`
-- `CONFIG_SRAM_SIZE=20`
-- `CONFIG_FLASH_LOAD_OFFSET=0x6000`
-- `CONFIG_INIT_ARCH_HW_AT_BOOT=y`
-- `CONFIG_ZMK_KSCAN_MATRIX_WAIT_BEFORE_INPUTS=1`
-- `CONFIG_ZMK_KSCAN_MATRIX_WAIT_BETWEEN_OUTPUTS=30`
-- the generated devicetree does not set the PLL `usbpre` property
-- the first vector (initial MSP) passes
-  `(initial_msp & 0x2FFFB000) == 0x20000000`
-- the first flash load segment in `zmk.elf` starts at `0x08006000`
-- no load segment targets an address below `0x08006000`
-- the firmware fits within `0x1A000` bytes of flash and 20 KiB of SRAM
+- A USB cable capable of data transfer
+- [`dfu-util`](https://dfu-util.sourceforge.net/)
+- A known-good official Vial/VIA `.bin` for the LINK65 hotswap PCB, for recovery
 
-## Safe flashing and rollback
+Confirm that `dfu-util` is available before continuing.
 
-Keep a known-good LINK65 Vial firmware available before testing.
+```console
+dfu-util --version
+```
 
-1. Disconnect the keyboard.
-2. Hold the physical **B** button while reconnecting it.
-3. Run `dfu-util -l` and confirm the bootloader reports USB ID `1688:2220` and
-   alternate setting 0.
-4. Flash only after the ID and firmware layout have both been verified:
+### 3. Enter the factory DFU bootloader
 
-   ```text
-   dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
-   ```
+1. Disconnect the keyboard's USB cable.
+2. Hold the physical **B** button on the PCB while reconnecting the cable.
+3. Release the **B** button.
+4. List the DFU devices.
 
-Normal ZMK updates must not overwrite the handoff region at `0x08005800`. A
-known-good Vial application backup that includes that region is restored at
-`0x08005800`. The physical B button is the supported bootloader-entry method;
-the first ZMK firmware does not attempt a software jump into the factory
-bootloader. `Left Ctrl + Left Alt + Backspace` performs a normal application
-reset.
+```console
+dfu-util -l
+```
 
-## First hardware acceptance test
+The output must show USB ID `1688:2220` and alternate setting 0. Do not flash
+anything if only a different device is listed or no device appears.
 
-After flashing, verify that the board enumerates as a USB HID keyboard, test all
-67 positions with a key tester, cold-boot it three times, and confirm the
-physical B button still enters the factory bootloader. In particular, test the
-last matrix column because it uses PA15, which must be released from JTAG.
+### 4. Flash ZMK
+
+Run the following command from the directory containing the firmware file.
+
+```console
+dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
+```
+
+When the operation finishes, the board should reconnect as an `Owlab Link` USB
+keyboard.
+
+> [!CAUTION]
+> Do not write an application at `0x08000000` or mass-erase the MCU. If the
+> factory bootloader is erased, it cannot be restored through USB DFU alone.
+> Firmware from this repository must always be flashed at `0x08006000`.
+
+## Keymap
+
+The default keymap is a conventional ANSI 65% QWERTY layout. Edit
+[`boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap`](boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap)
+to customize it.
+
+| Input | Action |
+| --- | --- |
+| `Left Ctrl + Left Alt + Backspace` | Soft-reset ZMK |
+| Hold the physical **B** button while connecting USB | Enter the factory DFU bootloader |
+
+A soft reset only restarts the application; it does not enter the DFU
+bootloader. Use the physical **B** button for firmware updates.
+
+To change the keymap, fork this repository, edit the `.keymap` file, and push
+the change. GitHub Actions will build a new `owlab_link_hotswap-zmk.bin`.
+
+## Restore Vial/VIA
+
+You can restore the factory firmware as long as the physical **B** button still
+enters DFU. Obtain a verified official `.bin` for the LINK65 hotswap PCB and
+flash it at the same application address.
+
+```console
+dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap_via_V3.bin
+```
+
+Adjust the filename to match the official firmware you have. Do not substitute
+firmware intended for another LINK65 revision.
+
+## Post-Flash Checks
+
+After the first installation, verify the following:
+
+1. The operating system recognizes the board as a USB HID keyboard.
+2. Every one of the 67 key positions registers in a key tester.
+3. Pressing one key does not also report the key immediately to its right.
+4. The keyboard survives three complete USB disconnect-and-reconnect cold boots.
+5. The physical **B** button still enters the factory DFU bootloader.
+
+Pay particular attention to the final matrix column, which uses PA15, and to
+the keys around `Esc`, `F`, and `G`.
+
+## Known Limitations
+
+- Runtime keymap editing through ZMK Studio is not supported yet.
+- No flash partition is reserved for persistent settings.
+- RGB and board-specific auxiliary features are not implemented.
+- Software entry into the factory DFU bootloader is not implemented.
+- The default keymap provides only one layer.
+
+Developers porting ZMK to another STM32F103/APM32F103-class board should read
+[`docs/porting-guide.md`](docs/porting-guide.md) first. Do not copy the LINK65
+flash map to another board without verifying it independently.

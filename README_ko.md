@@ -1,0 +1,148 @@
+# Owlab LINK65 ZMK Firmware
+
+[English](README.md)
+
+Owlab LINK65 핫스왑 PCB를 위한 유선 ZMK 펌웨어입니다. 공장 출하 DFU
+부트로더를 유지한 채 ZMK를 `0x08006000`부터 실행합니다.
+
+**이 펌웨어는 U3에 `APM32F103CBT6`가 장착된 LINK65 핫스왑 PCB에서만
+실기기 검증되었습니다. 솔더 PCB, 다른 리비전 또는 MCU가 다른 기판에는
+플래시하지 마십시오.**
+
+## 주요 특징
+
+- USB 유선 키보드와 65% ANSI 67키 배열 지원
+- 공장 DFU 부트로더와 물리 **B** 버튼을 그대로 사용
+- 공장 펌웨어와 동일한 active-low 행 스캔 및 열 입력 방식 적용
+- LINK65에서 확인된 30 us 매트릭스 안정화 시간 적용
+- PA15 키 입력을 사용하도록 JTAG만 해제하고 SWD 핀은 유지
+- GitHub Actions를 통한 재현 가능한 ZMK 펌웨어 빌드
+
+이 PCB에는 무선 하드웨어가 없으므로 Bluetooth는 지원하지 않습니다. 현재
+펌웨어에는 ZMK Studio, 영구 설정 저장소, RGB/조명 제어도 포함되어 있지
+않습니다.
+
+## 지원 대상
+
+| 항목 | 확인된 구성 |
+| --- | --- |
+| 키보드 | Owlab LINK65 핫스왑 PCB |
+| MCU | Geehy `APM32F103CBT6` |
+| 호환 SoC 설정 | Zephyr `STM32F103xB` |
+| 플래시 / SRAM | 128 KiB / 20 KiB |
+| 시스템 클럭 | 8 MHz HSE, 72 MHz CPU, 48 MHz USB |
+| 키 매트릭스 | 5행 × 15열, 67개 스위치 |
+| 연결 방식 | USB Full-Speed |
+| DFU 장치 | `1688:2220`, alternate setting 0 |
+
+기판의 U3 마킹이 위와 다르면 진행하지 마십시오. 같은 LINK65라는 이름만으로
+PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
+
+## 빠른 설치
+
+### 1. 펌웨어 받기
+
+1. [Build ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)에서
+   최근 성공한 실행을 엽니다.
+2. 실행 페이지 아래의 `firmware` artifact를 내려받아 압축을 풉니다.
+3. `owlab_link_hotswap-zmk.bin`을 준비합니다.
+
+현재 실기기 검증 기준은
+[commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
+[Actions run `31102550907`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/runs/31102550907)입니다.
+
+### 2. 준비하기
+
+- 데이터 전송이 가능한 USB 케이블
+- [`dfu-util`](https://dfu-util.sourceforge.net/)
+- 문제가 생겼을 때 되돌릴 수 있는 LINK65 핫스왑용 공식 Vial/VIA `.bin`
+
+다음 명령이 실행되는지 먼저 확인합니다.
+
+```console
+dfu-util --version
+```
+
+### 3. 공장 DFU 부트로더로 들어가기
+
+1. 키보드의 USB 케이블을 분리합니다.
+2. PCB의 물리 **B** 버튼을 누른 채 USB 케이블을 연결합니다.
+3. **B** 버튼에서 손을 뗍니다.
+4. 다음 명령으로 장치를 확인합니다.
+
+```console
+dfu-util -l
+```
+
+출력에 USB ID `1688:2220`과 alternate setting 0이 모두 보여야 합니다. 다른
+장치만 보이거나 아무 장치도 보이지 않으면 플래시하지 마십시오.
+
+### 4. ZMK 플래시하기
+
+펌웨어가 있는 폴더에서 다음 명령을 실행합니다.
+
+```console
+dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
+```
+
+완료되면 키보드가 `Owlab Link` USB 키보드로 다시 연결됩니다.
+
+> [!CAUTION]
+> `0x08000000`에 애플리케이션을 쓰거나 MCU를 mass erase하지 마십시오.
+> 공장 부트로더를 지우면 USB DFU만으로는 복구할 수 없습니다. 이 저장소의
+> 펌웨어는 항상 `0x08006000`에 플래시해야 합니다.
+
+## 키맵
+
+기본 키맵은 일반적인 ANSI 65% QWERTY 배열입니다. 원본은
+[`boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap`](boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap)에서
+수정할 수 있습니다.
+
+| 입력 | 동작 |
+| --- | --- |
+| `Left Ctrl + Left Alt + Backspace` | ZMK 소프트 리셋 |
+| 물리 **B** 버튼을 누른 채 USB 연결 | 공장 DFU 부트로더 진입 |
+
+소프트 리셋은 애플리케이션만 다시 시작하며 DFU 부트로더로 들어가지 않습니다.
+펌웨어를 업데이트할 때는 물리 **B** 버튼을 사용하십시오.
+
+키맵을 변경하려면 이 저장소를 fork한 뒤 `.keymap` 파일을 수정하고 push합니다.
+GitHub Actions가 새 `owlab_link_hotswap-zmk.bin`을 자동으로 빌드합니다.
+
+## Vial/VIA로 되돌리기
+
+물리 **B** 버튼으로 DFU에 들어갈 수 있다면 공장 펌웨어로 되돌릴 수 있습니다.
+LINK65 핫스왑 PCB용으로 확인된 공식 `.bin`을 준비하고 같은 애플리케이션
+주소에 플래시합니다.
+
+```console
+dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap_via_V3.bin
+```
+
+파일 이름은 보유한 공식 펌웨어에 맞게 바꾸십시오. 다른 LINK65 리비전의
+펌웨어를 대신 사용하지 마십시오.
+
+## 플래시 후 확인
+
+처음 설치한 뒤 다음 항목을 확인하십시오.
+
+1. 운영체제에서 USB HID 키보드로 정상 인식되는지 확인합니다.
+2. 키 테스터로 67개 위치를 모두 한 번씩 누릅니다.
+3. 키 하나를 눌렀을 때 오른쪽 키가 함께 입력되지 않는지 확인합니다.
+4. USB를 완전히 분리했다가 세 번 다시 연결해 봅니다.
+5. 물리 **B** 버튼으로 DFU에 다시 들어갈 수 있는지 확인합니다.
+
+PA15를 사용하는 마지막 매트릭스 열과 `Esc`, `F`, `G` 주변은 특히 확인하는
+것이 좋습니다.
+
+## 알려진 제한 사항
+
+- ZMK Studio를 통한 런타임 키맵 편집은 아직 지원하지 않습니다.
+- 설정 저장용 플래시 파티션을 만들지 않았습니다.
+- RGB 및 기판 고유 부가 기능은 구현하지 않았습니다.
+- 소프트웨어를 통한 공장 DFU 진입은 구현하지 않았습니다.
+- 기본 키맵은 한 개 레이어만 제공합니다.
+
+STM32F103/APM32F103 계열의 다른 기판을 ZMK로 포팅하려는 개발자는
+[`docs/porting-guide_ko.md`](docs/porting-guide_ko.md)를 먼저 읽으십시오. LINK65의
+플래시 맵을 다른 기판에 그대로 복사하면 안 됩니다.
