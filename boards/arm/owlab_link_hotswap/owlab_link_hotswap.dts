@@ -132,9 +132,15 @@
             read-only;
         };
 
-        code_partition: partition@5800 {
+        link_handoff_partition: partition@5800 {
+            label = "link65_handoff";
+            reg = <0x00005800 0x00000800>;
+            read-only;
+        };
+
+        code_partition: partition@6000 {
             label = "code";
-            reg = <0x00005800 0x0001A800>;
+            reg = <0x00006000 0x0001A000>;
         };
     };
 };

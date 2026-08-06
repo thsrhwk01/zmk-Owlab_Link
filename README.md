@@ -19,7 +19,8 @@ APM32F103CBT6 or another verified 128 KiB STM32F103xB-compatible part.
 | Region | Address range | Size |
 | --- | --- | ---: |
 | Factory bootloader | `0x08000000`-`0x080057FF` | 22 KiB |
-| ZMK application | `0x08005800`-`0x0801FFFF` | 106 KiB |
+| Vendor handoff data | `0x08005800`-`0x08005FFF` | 2 KiB |
+| ZMK application | `0x08006000`-`0x0801FFFF` | 104 KiB |
 
 The first bring-up firmware intentionally has no settings/storage partition and
 does not enable ZMK Studio. Never mass-erase the controller and never flash an
@@ -27,8 +28,11 @@ application at `0x08000000`.
 
 The factory DFU descriptor reports the internal flash as
 `22*001Ka,106*001Kg`: 22 read-only 1 KiB pages followed by 106 readable,
-erasable, and writable 1 KiB pages. A readback of a known-good factory image
-also contains a valid application vector table at `0x08005800`.
+erasable, and writable 1 KiB pages. This describes access permissions, not the
+application entry point. A readback of the protected bootloader contains two
+literal references to `0x08006000` and none to `0x08005800`; a known-good image
+also contains a vector table at `0x08006000`. Preserve the writable 2 KiB
+handoff region before the ZMK application.
 
 ## Build
 
@@ -40,10 +44,10 @@ Before flashing, inspect the build output and confirm all of the following:
 
 - `CONFIG_FLASH_SIZE=128`
 - `CONFIG_SRAM_SIZE=20`
-- `CONFIG_FLASH_LOAD_OFFSET=0x5800`
-- the first flash load segment in `zmk.elf` starts at `0x08005800`
-- no load segment targets an address below `0x08005800`
-- the firmware fits within `0x1A800` bytes of flash and 20 KiB of SRAM
+- `CONFIG_FLASH_LOAD_OFFSET=0x6000`
+- the first flash load segment in `zmk.elf` starts at `0x08006000`
+- no load segment targets an address below `0x08006000`
+- the firmware fits within `0x1A000` bytes of flash and 20 KiB of SRAM
 
 ## Safe flashing and rollback
 
@@ -56,13 +60,15 @@ Keep a known-good LINK65 Vial firmware available before testing.
 4. Flash only after the ID and firmware layout have both been verified:
 
    ```text
-   dfu-util -d 1688:2220 -a 0 -s 0x08005800:leave -D owlab_link_hotswap-zmk.bin
+   dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
    ```
 
-Use the same address to restore the known-good Vial `.bin`. The physical B
-button is the supported bootloader-entry method; the first ZMK firmware does not
-attempt a software jump into the factory bootloader. `Left Ctrl + Left Alt +
-Backspace` performs a normal application reset.
+Normal ZMK updates must not overwrite the handoff region at `0x08005800`. A
+known-good Vial application backup that includes that region is restored at
+`0x08005800`. The physical B button is the supported bootloader-entry method;
+the first ZMK firmware does not attempt a software jump into the factory
+bootloader. `Left Ctrl + Left Alt + Backspace` performs a normal application
+reset.
 
 ## First hardware acceptance test
 
