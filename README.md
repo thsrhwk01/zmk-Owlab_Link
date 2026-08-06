@@ -38,6 +38,9 @@ The bootloader also masks the application's initial main stack pointer with
 `0x2FFFB000` and only jumps when the result is `0x20000000`. The board linker
 snippet places Zephyr's early kernel stacks at the beginning of SRAM so the
 first vector passes that check without substituting a fake stack pointer.
+`CONFIG_INIT_ARCH_HW_AT_BOOT` is enabled because the factory DFU chain-loads
+the application without a Cortex-M system reset; Zephyr must clear inherited
+SysTick and NVIC state before enabling its own interrupts.
 
 ## Build
 
@@ -50,6 +53,7 @@ Before flashing, inspect the build output and confirm all of the following:
 - `CONFIG_FLASH_SIZE=128`
 - `CONFIG_SRAM_SIZE=20`
 - `CONFIG_FLASH_LOAD_OFFSET=0x6000`
+- `CONFIG_INIT_ARCH_HW_AT_BOOT=y`
 - the first vector (initial MSP) passes
   `(initial_msp & 0x2FFFB000) == 0x20000000`
 - the first flash load segment in `zmk.elf` starts at `0x08006000`

@@ -23,3 +23,8 @@ CONFIG_CLOCK_CONTROL=y
 
 # Link the application into the code partition declared in devicetree.
 CONFIG_USE_DT_CODE_PARTITION=y
+
+# The factory DFU chain-loads the application without a Cortex-M system reset.
+# Restore CONTROL, SysTick, NVIC priorities, enables, and pending state before
+# Zephyr starts so bootloader USB interrupts cannot leak into the application.
+CONFIG_INIT_ARCH_HW_AT_BOOT=y
