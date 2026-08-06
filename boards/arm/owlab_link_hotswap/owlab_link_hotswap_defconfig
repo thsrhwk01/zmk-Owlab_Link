@@ -18,8 +18,8 @@ CONFIG_ZMK_USB=y
 # CONFIG_ZMK_KSCAN_MATRIX_POLLING=y
 CONFIG_USB_SELF_POWERED=n
 
-# The input rows discharge through weak internal pull-downs. Without a pause
-# after releasing one column, its high level can be sampled as the next column.
+# Match the factory scanner's short propagation delay and 30 us settling time.
+CONFIG_ZMK_KSCAN_MATRIX_WAIT_BEFORE_INPUTS=1
 CONFIG_ZMK_KSCAN_MATRIX_WAIT_BETWEEN_OUTPUTS=30
 
 # clock configuration
