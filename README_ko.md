@@ -42,10 +42,17 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 
 ### 1. 펌웨어 받기
 
-1. [Build ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)에서
-   최근 성공한 실행을 엽니다.
-2. 실행 페이지 아래의 `firmware` artifact를 내려받아 압축을 풉니다.
-3. `owlab_link_hotswap-zmk.bin`을 준비합니다.
+1. [최신 GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest)를 엽니다.
+2. `owlab_link_hotswap-zmk.bin`과 `SHA256SUMS.txt`를 내려받습니다.
+3. 필요하면 플래시 전에 해시를 확인합니다.
+
+   ```powershell
+   Get-FileHash .\owlab_link_hotswap-zmk.bin -Algorithm SHA256
+   ```
+
+아직 Release가 없다면
+[Build and Release ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)의
+최근 성공 실행에서 `firmware` artifact를 내려받아 압축을 풉니다.
 
 현재 실기기 검증 기준은
 [commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
@@ -107,7 +114,8 @@ dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
 펌웨어를 업데이트할 때는 물리 **B** 버튼을 사용하십시오.
 
 키맵을 변경하려면 이 저장소를 fork한 뒤 `.keymap` 파일을 수정하고 push합니다.
-GitHub Actions가 새 `owlab_link_hotswap-zmk.bin`을 자동으로 빌드합니다.
+GitHub Actions가 새 `owlab_link_hotswap-zmk.bin`을 자동으로 빌드하며, 펌웨어와
+관련된 변경을 `main`에 push하면 최신 GitHub Release로도 게시합니다.
 
 ## Vial/VIA로 되돌리기
 

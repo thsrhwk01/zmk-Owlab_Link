@@ -42,10 +42,17 @@ LINK65 name does not necessarily use the same PCB or flash layout.
 
 ### 1. Download the firmware
 
-1. Open a recent successful run of
-   [Build ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml).
-2. Download the `firmware` artifact at the bottom of the run page and extract it.
-3. Locate `owlab_link_hotswap-zmk.bin`.
+1. Open the [latest GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest).
+2. Download `owlab_link_hotswap-zmk.bin` and `SHA256SUMS.txt`.
+3. Optionally verify the download before flashing:
+
+   ```powershell
+   Get-FileHash .\owlab_link_hotswap-zmk.bin -Algorithm SHA256
+   ```
+
+If no Release is available, open a successful
+[Build and Release ZMK firmware](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)
+run, download the `firmware` artifact, and extract it.
 
 The current hardware-validated baseline is
 [commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
@@ -108,7 +115,8 @@ A soft reset only restarts the application; it does not enter the DFU
 bootloader. Use the physical **B** button for firmware updates.
 
 To change the keymap, fork this repository, edit the `.keymap` file, and push
-the change. GitHub Actions will build a new `owlab_link_hotswap-zmk.bin`.
+the change. GitHub Actions builds a new `owlab_link_hotswap-zmk.bin`; a
+firmware-related push to `main` also publishes it as the latest GitHub Release.
 
 ## Restore Vial/VIA
 

@@ -372,9 +372,25 @@ Studio와 settings를 먼저 추가하면 부팅/USB 문제와 storage 문제를
 
 ### 9.1 검증된 빌드 경로
 
-이 저장소는 push, pull request 또는 수동 실행 시
-[`Build ZMK firmware`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)를
-실행합니다. 기대 artifact는 `owlab_link_hotswap-zmk.bin`입니다.
+이 저장소는 펌웨어 관련 push, pull request 또는 수동 실행 시
+[`Build and Release ZMK firmware`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)를
+실행합니다. `boards/`, `config/`, `zephyr/`, `build.yaml` 또는 workflow 자체의
+변경이 빌드를 시작하며 문서만 바꾼 push는 제외합니다. 기대 build artifact는
+`owlab_link_hotswap-zmk.bin`입니다.
+
+Release 동작은 성공한 빌드에만 연결됩니다.
+
+- 어느 브랜치든 펌웨어 관련 변경을 push하면 Actions artifact를 만듭니다.
+- `main`에 push하면 `Automatic build #<run> (<short-sha>)` 이름의 정식 GitHub
+  Release도 게시하고 latest로 지정합니다.
+- `v*.*` 태그를 push하면 `Release <tag>`를 게시합니다. 문자가 포함된 버전은
+  prerelease, 숫자로만 된 버전은 정식 Release이자 latest가 됩니다.
+- pull request와 수동 실행은 artifact만 만들고 Release를 게시하지 않습니다.
+
+Release job은 게시 전에 104 KiB 크기 제한, 공장 부트로더 MSP 마스크, Thumb
+bit와 Reset Handler 주소 범위를 검사합니다. 검사를 통과하면
+`SHA256SUMS.txt`를 만들고 `.bin`과 함께 Release에 첨부합니다. 빌드 또는 검증이
+실패하면 Release를 게시하지 않습니다.
 
 GitHub workflow가 사용하는 핵심 명령 형태는 다음과 같습니다.
 

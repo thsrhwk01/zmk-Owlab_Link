@@ -389,9 +389,26 @@ stable makes it harder to distinguish boot/USB faults from storage faults.
 ### 9.1 Verified build path
 
 The repository runs
-[`Build ZMK firmware`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)
-on a push, pull request, or manual dispatch. The expected artifact is
-`owlab_link_hotswap-zmk.bin`.
+[`Build and Release ZMK firmware`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/workflows/build.yml)
+for firmware-related pushes, pull requests, and manual dispatches. Changes under
+`boards/`, `config/`, or `zephyr/`, as well as `build.yaml` and the workflow
+itself, trigger a build. Documentation-only pushes do not. The expected build
+artifact is `owlab_link_hotswap-zmk.bin`.
+
+Release behavior is intentionally tied to a successful build:
+
+- A firmware-related push to any branch creates the Actions artifact.
+- A push to `main` additionally publishes a full GitHub Release named
+  `Automatic build #<run> (<short-sha>)` and marks it as the latest Release.
+- A pushed `v*.*` tag publishes `Release <tag>`. Tags containing letters are
+  prereleases; numeric version tags are full releases and become latest.
+- Pull requests and manual dispatches build the artifact but never publish a
+  Release.
+
+Before publication, the release job verifies the 104 KiB size limit, factory
+bootloader MSP mask, Thumb bit, and Reset Handler address range. It then writes
+`SHA256SUMS.txt` and attaches both that file and the `.bin` to the Release. A
+failed build or failed validation cannot publish a Release.
 
 The GitHub workflow uses a command of this form:
 
