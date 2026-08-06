@@ -104,7 +104,8 @@
 &pll {
     mul = <9>;
     clocks = <&clk_hse>;
-    usbpre;
+
+    /* Keep USBPRE clear: 72 MHz PLL / 1.5 supplies USB with 48 MHz. */
 
     status = "okay";
 };

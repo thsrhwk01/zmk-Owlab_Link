@@ -42,6 +42,10 @@ first vector passes that check without substituting a fake stack pointer.
 the application without a Cortex-M system reset; Zephyr must clear inherited
 SysTick and NVIC state before enabling its own interrupts.
 
+On STM32F103, the RCC `USBPRE` bit has inverted-looking semantics: when clear,
+the 72 MHz PLL is divided by 1.5 to produce the required 48 MHz USB clock. The
+devicetree therefore intentionally omits the PLL node's `usbpre` property.
+
 ## Build
 
 The repository is pinned to ZMK v0.3.0. Push the branch or manually dispatch the
@@ -54,6 +58,7 @@ Before flashing, inspect the build output and confirm all of the following:
 - `CONFIG_SRAM_SIZE=20`
 - `CONFIG_FLASH_LOAD_OFFSET=0x6000`
 - `CONFIG_INIT_ARCH_HW_AT_BOOT=y`
+- the generated devicetree does not set the PLL `usbpre` property
 - the first vector (initial MSP) passes
   `(initial_msp & 0x2FFFB000) == 0x20000000`
 - the first flash load segment in `zmk.elf` starts at `0x08006000`
