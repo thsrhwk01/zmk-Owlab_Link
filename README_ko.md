@@ -105,6 +105,11 @@ dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
 [`boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap`](boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap)에서
 수정할 수 있습니다.
 
+![LINK65 키맵 다이어그램](keymap-drawer/owlab_link_hotswap.svg "keymap-drawer로 생성")
+
+이 다이어그램은 [keymap-drawer](https://github.com/caksoylar/keymap-drawer)가
+`.keymap` 원본에서 생성하며, 키맵이 바뀌면 자동으로 갱신됩니다.
+
 | 입력 | 동작 |
 | --- | --- |
 | `Left Ctrl + Left Alt + Backspace` | ZMK 소프트 리셋 |

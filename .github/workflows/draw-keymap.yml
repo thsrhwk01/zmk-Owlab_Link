@@ -1,0 +1,26 @@
+name: Draw LINK65 keymap
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap"
+      - "config/owlab_link_hotswap.json"
+      - ".github/workflows/draw-keymap.yml"
+      - "keymap_drawer.config.yaml"
+
+jobs:
+  draw:
+    uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@main
+    permissions:
+      contents: write
+    with:
+      keymap_patterns: "boards/arm/owlab_link_hotswap/owlab_link_hotswap.keymap"
+      west_config_path: ""
+      json_path: "config"
+      draw_args: "owlab_link_hotswap:'--keys-only'"
+      commit_message: "docs: update LINK65 keymap diagram"
+      destination: "commit"
+      fail_on_error: true
