@@ -16,7 +16,8 @@
 SECTION_DATA_PROLOGUE(link65_boot_stacks, (NOLOAD), SUBALIGN(8))
 {
 	__link65_boot_stacks_start = .;
-	KEEP(*(.noinit.*kernel/init.c.*))
+	/* __in_section_unique() quotes __FILE__ inside the ELF section name. */
+	KEEP(*(.noinit.*kernel/init.c*))
 	__link65_boot_stacks_end = .;
 } GROUP_NOLOAD_LINK_IN(RAMABLE_REGION, ROMABLE_REGION)
 
