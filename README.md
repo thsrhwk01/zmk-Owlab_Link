@@ -46,6 +46,12 @@ On STM32F103, the RCC `USBPRE` bit has inverted-looking semantics: when clear,
 the 72 MHz PLL is divided by 1.5 to produce the required 48 MHz USB clock. The
 devicetree therefore intentionally omits the PLL node's `usbpre` property.
 
+The matrix scanner waits 30 microseconds after releasing each driven column.
+The LINK65 input rows use weak internal pull-downs, and ZMK's zero-delay default
+can otherwise retain the previous row level long enough to report the key in
+the next column as well. This matches the settling delay used by QMK-style
+matrix scanning without changing the verified column order or diode direction.
+
 ## Build
 
 The repository is pinned to ZMK v0.3.0. Push the branch or manually dispatch the
@@ -58,6 +64,7 @@ Before flashing, inspect the build output and confirm all of the following:
 - `CONFIG_SRAM_SIZE=20`
 - `CONFIG_FLASH_LOAD_OFFSET=0x6000`
 - `CONFIG_INIT_ARCH_HW_AT_BOOT=y`
+- `CONFIG_ZMK_KSCAN_MATRIX_WAIT_BETWEEN_OUTPUTS=30`
 - the generated devicetree does not set the PLL `usbpre` property
 - the first vector (initial MSP) passes
   `(initial_msp & 0x2FFFB000) == 0x20000000`
