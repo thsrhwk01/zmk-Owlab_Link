@@ -40,7 +40,26 @@ LINK65 name does not necessarily use the same PCB or flash layout.
 
 ## Quick Install
 
-### 1. Download the firmware
+### Windows one-click flasher
+
+1. Open the [latest GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest).
+2. Download `LINK65-ZMK-Windows.zip` and extract every file.
+3. Double-click `flash-link65.cmd`.
+4. When prompted, hold the physical **B** button while connecting USB, then
+   release the button. The script waits for the correct DFU device and flashes
+   the verified firmware automatically.
+
+On first use, Windows may require the DFU interface `1688:2220` to be associated
+with the WinUSB driver. Follow `README_KO.txt` in the ZIP if the flasher cannot
+find the keyboard. Do not change the driver for an unrelated USB device.
+
+Every successful firmware build, including a non-`main` branch build, publishes
+a `LINK65-ZMK-Windows` Actions artifact. Releases from `main` and version tags
+also attach the ready-to-download ZIP.
+
+### Manual installation
+
+#### 1. Download the firmware
 
 1. Open the [latest GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest).
 2. Download `owlab_link_hotswap-zmk.bin` and `SHA256SUMS.txt`.
@@ -58,7 +77,7 @@ The current hardware-validated baseline is
 [commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
 built by [Actions run `31102550907`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/runs/31102550907).
 
-### 2. Prepare
+#### 2. Prepare
 
 - A USB cable capable of data transfer
 - [`dfu-util`](https://dfu-util.sourceforge.net/)
@@ -70,7 +89,7 @@ Confirm that `dfu-util` is available before continuing.
 dfu-util --version
 ```
 
-### 3. Enter the factory DFU bootloader
+#### 3. Enter the factory DFU bootloader
 
 1. Disconnect the keyboard's USB cable.
 2. Hold the physical **B** button on the PCB while reconnecting the cable.
@@ -84,7 +103,7 @@ dfu-util -l
 The output must show USB ID `1688:2220` and alternate setting 0. Do not flash
 anything if only a different device is listed or no device appears.
 
-### 4. Flash ZMK
+#### 4. Flash ZMK
 
 Run the following command from the directory containing the firmware file.
 
@@ -121,8 +140,9 @@ A soft reset only restarts the application; it does not enter the DFU
 bootloader. Use the physical **B** button for firmware updates.
 
 To change the keymap, fork this repository, edit the `.keymap` file, and push
-the change. GitHub Actions builds a new `owlab_link_hotswap-zmk.bin`; a
-firmware-related push to `main` also publishes it as the latest GitHub Release.
+the change. GitHub Actions builds both a raw `owlab_link_hotswap-zmk.bin` and a
+`LINK65-ZMK-Windows` one-click flasher artifact. A firmware-related push to
+`main` also publishes them in the latest GitHub Release.
 
 ## Restore Vial/VIA
 

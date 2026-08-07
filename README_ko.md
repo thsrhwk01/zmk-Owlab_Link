@@ -40,7 +40,27 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 
 ## 빠른 설치
 
-### 1. 펌웨어 받기
+### Windows 원클릭 플래셔
+
+1. [최신 GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest)를 엽니다.
+2. `LINK65-ZMK-Windows.zip`을 내려받고 파일을 모두 압축 해제합니다.
+3. `flash-link65.cmd`를 더블 클릭합니다.
+4. 안내가 나오면 PCB의 물리 **B** 버튼을 누른 채 USB를 연결하고 버튼에서
+   손을 뗍니다. 스크립트가 올바른 DFU 장치를 기다렸다가 검증된 펌웨어를
+   자동으로 플래시합니다.
+
+Windows에서 처음 사용할 때 DFU 인터페이스 `1688:2220`에 WinUSB 드라이버를
+연결해야 할 수 있습니다. 플래셔가 키보드를 찾지 못하면 ZIP에 포함된
+`README_KO.txt`를 따르십시오. 관계없는 USB 장치의 드라이버는 변경하지
+마십시오.
+
+`main`이 아닌 브랜치도 펌웨어 빌드가 성공할 때마다 Actions에
+`LINK65-ZMK-Windows` artifact가 생성됩니다. `main` 및 버전 태그 배포에는
+바로 내려받을 수 있는 ZIP도 첨부됩니다.
+
+### 수동 설치
+
+#### 1. 펌웨어 받기
 
 1. [최신 GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest)를 엽니다.
 2. `owlab_link_hotswap-zmk.bin`과 `SHA256SUMS.txt`를 내려받습니다.
@@ -58,7 +78,7 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 [commit `2a8cde7`](https://github.com/thsrhwk01/zmk-Owlab_Link/commit/2a8cde7fc346bc73e935f38bb52aeee44a7fb05f),
 [Actions run `31102550907`](https://github.com/thsrhwk01/zmk-Owlab_Link/actions/runs/31102550907)입니다.
 
-### 2. 준비하기
+#### 2. 준비하기
 
 - 데이터 전송이 가능한 USB 케이블
 - [`dfu-util`](https://dfu-util.sourceforge.net/)
@@ -70,7 +90,7 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 dfu-util --version
 ```
 
-### 3. 공장 DFU 부트로더로 들어가기
+#### 3. 공장 DFU 부트로더로 들어가기
 
 1. 키보드의 USB 케이블을 분리합니다.
 2. PCB의 물리 **B** 버튼을 누른 채 USB 케이블을 연결합니다.
@@ -84,7 +104,7 @@ dfu-util -l
 출력에 USB ID `1688:2220`과 alternate setting 0이 모두 보여야 합니다. 다른
 장치만 보이거나 아무 장치도 보이지 않으면 플래시하지 마십시오.
 
-### 4. ZMK 플래시하기
+#### 4. ZMK 플래시하기
 
 펌웨어가 있는 폴더에서 다음 명령을 실행합니다.
 
@@ -119,8 +139,9 @@ dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
 펌웨어를 업데이트할 때는 물리 **B** 버튼을 사용하십시오.
 
 키맵을 변경하려면 이 저장소를 fork한 뒤 `.keymap` 파일을 수정하고 push합니다.
-GitHub Actions가 새 `owlab_link_hotswap-zmk.bin`을 자동으로 빌드하며, 펌웨어와
-관련된 변경을 `main`에 push하면 최신 GitHub Release로도 게시합니다.
+GitHub Actions가 `owlab_link_hotswap-zmk.bin`과 `LINK65-ZMK-Windows` 원클릭
+플래셔 artifact를 자동으로 빌드합니다. 펌웨어 관련 변경을 `main`에 push하면
+둘 다 최신 GitHub Release에도 게시합니다.
 
 ## Vial/VIA로 되돌리기
 

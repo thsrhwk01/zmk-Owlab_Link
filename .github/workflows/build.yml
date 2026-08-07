@@ -8,6 +8,7 @@ on:
       - "config/**"
       - "zephyr/**"
       - "build.yaml"
+      - "tools/windows-flasher/**"
       - ".github/workflows/build.yml"
   push:
     branches:
@@ -19,6 +20,7 @@ on:
       - "config/**"
       - "zephyr/**"
       - "build.yaml"
+      - "tools/windows-flasher/**"
       - ".github/workflows/build.yml"
 
 permissions:
@@ -28,30 +30,29 @@ jobs:
   build:
     uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@v0.3.0
 
-  release:
-    name: Publish firmware release
+  package:
+    name: Package Windows flasher
     needs: build
-    if: >-
-      github.event_name == 'push' &&
-      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
     permissions:
       actions: read
-      contents: write
+      contents: read
 
     steps:
+      - name: Check out flasher files
+        uses: actions/checkout@v4
+
       - name: Download built firmware
         uses: actions/download-artifact@v4
         with:
           name: firmware
           path: artifacts
 
-      - name: Verify firmware and write checksums
+      - name: Verify firmware image
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          from hashlib import sha256
           from pathlib import Path
           from struct import unpack_from
 
@@ -73,15 +74,113 @@ jobs:
           if reset_handler & 1 == 0 or not 0x08006000 <= reset_address < 0x08020000:
               raise SystemExit(f"invalid Reset Handler 0x{reset_handler:08X}")
 
-          digest = sha256(image).hexdigest().upper()
-          Path("artifacts/SHA256SUMS.txt").write_text(
-              f"{digest}  {path.name}\n", encoding="ascii"
-          )
           print(f"size={len(image)}")
           print(f"initial_msp=0x{initial_msp:08X}")
           print(f"reset_handler=0x{reset_handler:08X}")
-          print(f"sha256={digest}")
           PY
+
+      - name: Download verified dfu-util distribution
+        shell: bash
+        env:
+          DFU_UTIL_BIN_SHA256: 6450de30a7dcd8d8c1273f43f0b153f054fd24d85f7f38296b1ad8edbd2ddb25
+          DFU_UTIL_SRC_SHA256: b4b53ba21a82ef7e3d4c47df2952adf5fa494f499b6b0b57c58c5d04ae8ff19e
+          LIBUSB_SRC_SHA256: 9c95417c6dfafa883798fa8f6a0f726581573952c2293fa7b6c4252f38afbc37
+        run: |
+          set -euo pipefail
+          curl --location --fail --retry 3 \
+            --output dfu-util-0.11-binaries.tar.xz \
+            https://downloads.sourceforge.net/project/dfu-util/dfu-util-0.11-binaries.tar.xz
+          curl --location --fail --retry 3 \
+            --output dfu-util-0.11.tar.gz \
+            https://downloads.sourceforge.net/project/dfu-util/dfu-util-0.11.tar.gz
+          curl --location --fail --retry 3 \
+            --output libusb-1a906274a66dd58bf81836db1306902d4a7dc185.tar.gz \
+            https://codeload.github.com/libusb/libusb/tar.gz/1a906274a66dd58bf81836db1306902d4a7dc185
+          echo "${DFU_UTIL_BIN_SHA256}  dfu-util-0.11-binaries.tar.xz" | sha256sum --check --strict
+          echo "${DFU_UTIL_SRC_SHA256}  dfu-util-0.11.tar.gz" | sha256sum --check --strict
+          echo "${LIBUSB_SRC_SHA256}  libusb-1a906274a66dd58bf81836db1306902d4a7dc185.tar.gz" | sha256sum --check --strict
+          tar -xJf dfu-util-0.11-binaries.tar.xz
+
+      - name: Assemble flasher bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_root="package/LINK65-ZMK-Windows"
+          third_party="${package_root}/third-party/dfu-util"
+          mkdir -p "${third_party}"
+
+          cp artifacts/owlab_link_hotswap-zmk.bin "${package_root}/"
+          cp tools/windows-flasher/flash-link65.cmd "${package_root}/"
+          cp tools/windows-flasher/flash-link65.ps1 "${package_root}/"
+          cp tools/windows-flasher/README_KO.txt "${package_root}/"
+          cp tools/windows-flasher/THIRD-PARTY-NOTICES.txt "${package_root}/"
+          cp dfu-util-0.11-binaries/win64/dfu-util.exe "${package_root}/"
+          cp dfu-util-0.11-binaries/win64/libusb-1.0.dll "${package_root}/"
+          cp dfu-util-0.11-binaries/COPYING "${third_party}/COPYING.txt"
+          cp dfu-util-0.11-binaries/README-bin.txt "${third_party}/"
+          cp dfu-util-0.11.tar.gz "${third_party}/"
+          cp libusb-1a906274a66dd58bf81836db1306902d4a7dc185.tar.gz "${third_party}/"
+
+          printf 'Source commit: %s\nActions run: %s\n' \
+            "${GITHUB_SHA}" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            > "${package_root}/BUILD-INFO.txt"
+
+          (
+            cd "${package_root}"
+            sha256sum \
+              owlab_link_hotswap-zmk.bin \
+              dfu-util.exe \
+              libusb-1.0.dll \
+              > SHA256SUMS.txt
+          )
+
+      - name: Upload one-click Windows flasher
+        uses: actions/upload-artifact@v4
+        with:
+          name: LINK65-ZMK-Windows
+          path: package/LINK65-ZMK-Windows
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 30
+
+  release:
+    name: Publish firmware release
+    needs: package
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - name: Download built firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware
+          path: artifacts
+
+      - name: Download Windows flasher files
+        uses: actions/download-artifact@v4
+        with:
+          name: LINK65-ZMK-Windows
+          path: flasher
+
+      - name: Create release archives and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          (
+            cd flasher
+            zip -9 -r ../release/LINK65-ZMK-Windows.zip .
+          )
+          cp artifacts/owlab_link_hotswap-zmk.bin release/
+          (
+            cd release
+            sha256sum LINK65-ZMK-Windows.zip owlab_link_hotswap-zmk.bin > SHA256SUMS.txt
+          )
 
       - name: Determine release metadata
         id: release
@@ -122,15 +221,19 @@ jobs:
           make_latest: ${{ steps.release.outputs.make_latest }}
           fail_on_unmatched_files: true
           files: |
-            artifacts/owlab_link_hotswap-zmk.bin
-            artifacts/SHA256SUMS.txt
+            release/LINK65-ZMK-Windows.zip
+            release/owlab_link_hotswap-zmk.bin
+            release/SHA256SUMS.txt
           body: |
             Automated ZMK firmware for the Owlab LINK65 hotswap PCB.
 
             Source commit: `${{ github.sha }}`
 
-            Flash `owlab_link_hotswap-zmk.bin` at `0x08006000`. Do not mass-erase
-            the MCU or overwrite the factory bootloader. Read the repository
-            README before flashing.
+            Windows users can download `LINK65-ZMK-Windows.zip`, extract every
+            file, and run `flash-link65.cmd`. Manual flashing remains available
+            with `owlab_link_hotswap-zmk.bin` at `0x08006000`.
+
+            Do not mass-erase the MCU or overwrite the factory bootloader. Read
+            the repository README before flashing.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
