@@ -94,8 +94,24 @@ try {
     Write-Host "WARNING: Confirm the target keyboard before continuing." -ForegroundColor Yellow
     Write-Host "Only use this flasher with an Owlab LINK65 HOTSWAP PCB" -ForegroundColor Yellow
     Write-Host "that has an APM32F103CBT6 at U3." -ForegroundColor Yellow
-    $Confirmation = Read-Host "Will you connect that exact board in DFU mode? [y/N]"
-    if ([string]::IsNullOrWhiteSpace($Confirmation) -or $Confirmation.Trim() -notmatch '^y$') {
+
+    Add-Type -AssemblyName System.Windows.Forms
+    $ConfirmationMessage = @"
+Confirm that the target is an Owlab LINK65 HOTSWAP PCB
+with an APM32F103CBT6 at U3.
+
+Flashing a different device may require hardware recovery.
+
+Continue?
+"@
+    $Confirmation = [System.Windows.Forms.MessageBox]::Show(
+        $ConfirmationMessage,
+        "LINK65 Firmware Flasher",
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Warning,
+        [System.Windows.Forms.MessageBoxDefaultButton]::Button2
+    )
+    if ($Confirmation -ne [System.Windows.Forms.DialogResult]::Yes) {
         Write-Host "Cancelled. Nothing was written to any device." -ForegroundColor Cyan
         exit 0
     }
