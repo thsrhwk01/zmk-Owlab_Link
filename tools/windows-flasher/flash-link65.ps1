@@ -95,13 +95,15 @@ try {
     Write-Host "Waiting for LINK65 DFU device $ExpectedVidPid (press Ctrl+C to cancel)..."
     Write-Host ""
 
-    & $DfuUtilPath -w -d $ExpectedVidPid -a 0 -s "${ApplicationAddress}:leave" -D $FirmwarePath
+    & $DfuUtilPath -w -d $ExpectedVidPid -a 0 -s $ApplicationAddress -D $FirmwarePath
     if ($LASTEXITCODE -ne 0) {
         Stop-Flasher ("dfu-util exited with code {0}. See README_KO.txt for driver help." -f $LASTEXITCODE)
     }
 
     Write-Host ""
-    Write-Host "Flash complete. The keyboard should reconnect as Owlab Link." -ForegroundColor Green
+    Write-Host "Flash complete." -ForegroundColor Green
+    Write-Host "Disconnect USB, then reconnect it WITHOUT holding the B button." -ForegroundColor Cyan
+    Write-Host "The keyboard should start as Owlab Link."
     exit 0
 }
 catch {

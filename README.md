@@ -48,6 +48,12 @@ LINK65 name does not necessarily use the same PCB or flash layout.
 4. When prompted, hold the physical **B** button while connecting USB, then
    release the button. The script waits for the correct DFU device and flashes
    the verified firmware automatically.
+5. After `Flash complete` appears, disconnect USB and reconnect it without
+   holding the **B** button.
+
+The factory bootloader does not reliably acknowledge an automatic leave
+request. The flasher therefore leaves it in DFU mode after a successful write
+and asks you to reconnect the cable manually.
 
 On first use, Windows may require the DFU interface `1688:2220` to be associated
 with the WinUSB driver. Follow `README_KO.txt` in the ZIP if the flasher cannot
@@ -108,10 +114,11 @@ anything if only a different device is listed or no device appears.
 Run the following command from the directory containing the firmware file.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
+dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
 ```
 
-When the operation finishes, the board should reconnect as an `Owlab Link` USB
+After `File downloaded successfully` appears, disconnect USB and reconnect it
+without holding the **B** button. The board should start as an `Owlab Link` USB
 keyboard.
 
 > [!CAUTION]
@@ -151,10 +158,11 @@ enters DFU. Obtain a verified official `.bin` for the LINK65 hotswap PCB and
 flash it at the same application address.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap_via_V3.bin
+dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
 ```
 
-Adjust the filename to match the official firmware you have. Do not substitute
+Adjust the filename to match the official firmware you have. After the download
+succeeds, disconnect and reconnect USB without holding **B**. Do not substitute
 firmware intended for another LINK65 revision.
 
 ## Post-Flash Checks

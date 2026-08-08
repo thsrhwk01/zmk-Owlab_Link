@@ -48,6 +48,12 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 4. 안내가 나오면 PCB의 물리 **B** 버튼을 누른 채 USB를 연결하고 버튼에서
    손을 뗍니다. 스크립트가 올바른 DFU 장치를 기다렸다가 검증된 펌웨어를
    자동으로 플래시합니다.
+5. `Flash complete`가 표시되면 USB를 분리한 뒤, **B** 버튼을 누르지 않고
+   다시 연결합니다.
+
+공장 부트로더는 자동 DFU 종료 요청에 안정적으로 응답하지 않습니다. 따라서
+플래셔는 기록 성공 후 DFU 모드에 그대로 두고 USB를 직접 다시 연결하도록
+안내합니다.
 
 Windows에서 처음 사용할 때 DFU 인터페이스 `1688:2220`에 WinUSB 드라이버를
 연결해야 할 수 있습니다. 플래셔가 키보드를 찾지 못하면 ZIP에 포함된
@@ -109,10 +115,11 @@ dfu-util -l
 펌웨어가 있는 폴더에서 다음 명령을 실행합니다.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap-zmk.bin
+dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
 ```
 
-완료되면 키보드가 `Owlab Link` USB 키보드로 다시 연결됩니다.
+`File downloaded successfully`가 표시되면 USB를 분리하고 **B** 버튼을 누르지
+않은 채 다시 연결합니다. 키보드가 `Owlab Link` USB 키보드로 시작해야 합니다.
 
 > [!CAUTION]
 > `0x08000000`에 애플리케이션을 쓰거나 MCU를 mass erase하지 마십시오.
@@ -150,11 +157,12 @@ LINK65 핫스왑 PCB용으로 확인된 공식 `.bin`을 준비하고 같은 애
 주소에 플래시합니다.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000:leave -D owlab_link_hotswap_via_V3.bin
+dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
 ```
 
-파일 이름은 보유한 공식 펌웨어에 맞게 바꾸십시오. 다른 LINK65 리비전의
-펌웨어를 대신 사용하지 마십시오.
+파일 이름은 보유한 공식 펌웨어에 맞게 바꾸십시오. 다운로드가 성공하면
+**B** 버튼을 누르지 않고 USB를 분리했다가 다시 연결합니다. 다른 LINK65
+리비전의 펌웨어를 대신 사용하지 마십시오.
 
 ## 플래시 후 확인
 
