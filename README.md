@@ -63,8 +63,8 @@ with the WinUSB driver. Follow `README_KO.txt` in the ZIP if the flasher cannot
 find the keyboard. Do not change the driver for an unrelated USB device.
 
 Every successful firmware build, including a non-`main` branch build, publishes
-a `LINK65-ZMK-Windows` Actions artifact. Releases from `main` and version tags
-also attach the ready-to-download ZIP.
+a `LINK65-ZMK-Windows` Actions artifact. A GitHub Release with the ready-to-use
+ZIP is published only when a version tag such as `v1.0.0` is pushed.
 
 ### Manual installation
 
@@ -151,8 +151,24 @@ bootloader. Use the physical **B** button for firmware updates.
 
 To change the keymap, fork this repository, edit the `.keymap` file, and push
 the change. GitHub Actions builds both a raw `owlab_link_hotswap-zmk.bin` and a
-`LINK65-ZMK-Windows` one-click flasher artifact. A firmware-related push to
-`main` also publishes them in the latest GitHub Release.
+`LINK65-ZMK-Windows` one-click flasher artifact. Normal pushes, including pushes
+to `main`, do not publish a GitHub Release.
+
+## Publishing a Release
+
+After the intended commit is merged into `main` and its Actions build succeeds,
+create and push an annotated version tag.
+
+```console
+git switch main
+git pull --ff-only
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+Only a pushed tag matching `v*.*` publishes the firmware, checksums, and Windows
+flasher ZIP. A tag containing letters, such as `v1.1.0-beta.1`, is published as
+a prerelease; an ordinary numeric version becomes the latest stable release.
 
 ## Restore Vial/VIA
 

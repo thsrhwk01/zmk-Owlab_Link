@@ -63,8 +63,8 @@ Windows에서 처음 사용할 때 DFU 인터페이스 `1688:2220`에 WinUSB 드
 마십시오.
 
 `main`이 아닌 브랜치도 펌웨어 빌드가 성공할 때마다 Actions에
-`LINK65-ZMK-Windows` artifact가 생성됩니다. `main` 및 버전 태그 배포에는
-바로 내려받을 수 있는 ZIP도 첨부됩니다.
+`LINK65-ZMK-Windows` artifact가 생성됩니다. 바로 사용할 수 있는 ZIP이 첨부된
+GitHub Release는 `v1.0.0` 같은 버전 태그를 push할 때만 게시됩니다.
 
 ### 수동 설치
 
@@ -149,8 +149,24 @@ dfu-util -d ,1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
 
 키맵을 변경하려면 이 저장소를 fork한 뒤 `.keymap` 파일을 수정하고 push합니다.
 GitHub Actions가 `owlab_link_hotswap-zmk.bin`과 `LINK65-ZMK-Windows` 원클릭
-플래셔 artifact를 자동으로 빌드합니다. 펌웨어 관련 변경을 `main`에 push하면
-둘 다 최신 GitHub Release에도 게시합니다.
+플래셔 artifact를 자동으로 빌드합니다. `main`을 포함한 일반 push는 GitHub
+Release를 게시하지 않습니다.
+
+## Release 게시하기
+
+배포할 커밋을 `main`에 병합하고 Actions 빌드 성공을 확인한 뒤 annotated 버전
+태그를 만들어 push합니다.
+
+```console
+git switch main
+git pull --ff-only
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+`v*.*` 형식과 일치하는 태그를 push할 때만 펌웨어, 체크섬과 Windows 플래셔
+ZIP이 Release에 게시됩니다. `v1.1.0-beta.1`처럼 문자가 들어간 태그는
+prerelease가 되고, 숫자로만 된 일반 버전은 최신 안정 Release가 됩니다.
 
 ## Vial/VIA로 되돌리기
 

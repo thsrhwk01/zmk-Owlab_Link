@@ -148,7 +148,8 @@ jobs:
     needs: package
     if: >-
       github.event_name == 'push' &&
-      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+      github.ref_type == 'tag' &&
+      startsWith(github.ref_name, 'v')
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -187,21 +188,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            tag="${GITHUB_REF_NAME}"
-            version="${tag#v}"
-            name="Release ${tag}"
-            if [[ "${version}" =~ [a-zA-Z] ]]; then
-              prerelease="true"
-              make_latest="false"
-            else
-              prerelease="false"
-              make_latest="true"
-            fi
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          name="Release ${tag}"
+          if [[ "${version}" =~ [a-zA-Z] ]]; then
+            prerelease="true"
+            make_latest="false"
           else
-            short_sha="${GITHUB_SHA::7}"
-            tag="build-${GITHUB_RUN_NUMBER}-${short_sha}"
-            name="Automatic build #${GITHUB_RUN_NUMBER} (${short_sha})"
             prerelease="false"
             make_latest="true"
           fi
