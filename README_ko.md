@@ -45,10 +45,12 @@ PCB와 플래시 레이아웃이 같다고 가정할 수 없습니다.
 1. [최신 GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest)를 엽니다.
 2. `LINK65-ZMK-Windows.zip`을 내려받고 파일을 모두 압축 해제합니다.
 3. `flash-link65.cmd`를 더블 클릭합니다.
-4. 안내가 나오면 PCB의 물리 **B** 버튼을 누른 채 USB를 연결하고 버튼에서
+4. LINK65 핫스왑 PCB와 U3의 `APM32F103CBT6`를 확인한 뒤 경고 질문에 `y`를
+   입력합니다. `n` 또는 빈 입력은 아무것도 기록하지 않고 취소합니다.
+5. 안내가 나오면 PCB의 물리 **B** 버튼을 누른 채 USB를 연결하고 버튼에서
    손을 뗍니다. 스크립트가 올바른 DFU 장치를 기다렸다가 검증된 펌웨어를
    자동으로 플래시합니다.
-5. `Flash complete`가 표시되면 USB를 분리한 뒤, **B** 버튼을 누르지 않고
+6. `Flash complete`가 표시되면 USB를 분리한 뒤, **B** 버튼을 누르지 않고
    다시 연결합니다.
 
 공장 부트로더는 자동 DFU 종료 요청에 안정적으로 응답하지 않습니다. 따라서
@@ -115,7 +117,7 @@ dfu-util -l
 펌웨어가 있는 폴더에서 다음 명령을 실행합니다.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
+dfu-util -d ,1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
 ```
 
 `File downloaded successfully`가 표시되면 USB를 분리하고 **B** 버튼을 누르지
@@ -157,7 +159,7 @@ LINK65 핫스왑 PCB용으로 확인된 공식 `.bin`을 준비하고 같은 애
 주소에 플래시합니다.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
+dfu-util -d ,1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
 ```
 
 파일 이름은 보유한 공식 펌웨어에 맞게 바꾸십시오. 다운로드가 성공하면

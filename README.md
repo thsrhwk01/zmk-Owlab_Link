@@ -45,10 +45,13 @@ LINK65 name does not necessarily use the same PCB or flash layout.
 1. Open the [latest GitHub Release](https://github.com/thsrhwk01/zmk-Owlab_Link/releases/latest).
 2. Download `LINK65-ZMK-Windows.zip` and extract every file.
 3. Double-click `flash-link65.cmd`.
-4. When prompted, hold the physical **B** button while connecting USB, then
+4. Confirm the LINK65 hotswap PCB and the `APM32F103CBT6` at U3, then enter
+   `y` at the warning prompt. Entering `n` or pressing Enter cancels without
+   writing anything.
+5. When prompted, hold the physical **B** button while connecting USB, then
    release the button. The script waits for the correct DFU device and flashes
    the verified firmware automatically.
-5. After `Flash complete` appears, disconnect USB and reconnect it without
+6. After `Flash complete` appears, disconnect USB and reconnect it without
    holding the **B** button.
 
 The factory bootloader does not reliably acknowledge an automatic leave
@@ -114,7 +117,7 @@ anything if only a different device is listed or no device appears.
 Run the following command from the directory containing the firmware file.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
+dfu-util -d ,1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap-zmk.bin
 ```
 
 After `File downloaded successfully` appears, disconnect USB and reconnect it
@@ -158,7 +161,7 @@ enters DFU. Obtain a verified official `.bin` for the LINK65 hotswap PCB and
 flash it at the same application address.
 
 ```console
-dfu-util -d 1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
+dfu-util -d ,1688:2220 -a 0 -s 0x08006000 -D owlab_link_hotswap_via_V3.bin
 ```
 
 Adjust the filename to match the official firmware you have. After the download

@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 $FirmwareName = "owlab_link_hotswap-zmk.bin"
 $ExpectedVidPid = "1688:2220"
+$DfuModeSelector = ",$ExpectedVidPid"
 $ApplicationAddress = "0x08006000"
 $MaximumImageSize = 0x1A000
 
@@ -90,12 +91,22 @@ try {
     }
 
     Write-Host ""
+    Write-Host "WARNING: Confirm the target keyboard before continuing." -ForegroundColor Yellow
+    Write-Host "Only use this flasher with an Owlab LINK65 HOTSWAP PCB" -ForegroundColor Yellow
+    Write-Host "that has an APM32F103CBT6 at U3." -ForegroundColor Yellow
+    $Confirmation = Read-Host "Will you connect that exact board in DFU mode? [y/N]"
+    if ([string]::IsNullOrWhiteSpace($Confirmation) -or $Confirmation.Trim() -notmatch '^y$') {
+        Write-Host "Cancelled. Nothing was written to any device." -ForegroundColor Cyan
+        exit 0
+    }
+
+    Write-Host ""
     Write-Host "Disconnect the keyboard." -ForegroundColor Cyan
     Write-Host "Hold the physical B button, connect USB, then release B." -ForegroundColor Cyan
     Write-Host "Waiting for LINK65 DFU device $ExpectedVidPid (press Ctrl+C to cancel)..."
     Write-Host ""
 
-    & $DfuUtilPath -w -d $ExpectedVidPid -a 0 -s $ApplicationAddress -D $FirmwarePath
+    & $DfuUtilPath -w -d $DfuModeSelector -a 0 -s $ApplicationAddress -D $FirmwarePath
     if ($LASTEXITCODE -ne 0) {
         Stop-Flasher ("dfu-util exited with code {0}. See README_KO.txt for driver help." -f $LASTEXITCODE)
     }
